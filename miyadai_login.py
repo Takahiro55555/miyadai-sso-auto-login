@@ -1,6 +1,8 @@
 """
 selenium自動ログイン
 """
+import datetime
+import socket
 import platform
 
 from selenium import webdriver
@@ -12,6 +14,16 @@ from selenium.webdriver.common.by import By
 
 
 def login(mid):
+    # 外部との疎通が確認できた場合は何もしない
+    address01 = "8.8.8.8"
+    if check_internet("8.8.8.8"):
+        print("[%s] 外部(%s)との疎通を確認しました" % (datetime.datetime.now(), address01))
+        return
+    address02 = "1.1.1.1"
+    if check_internet("1.1.1.1"):
+        print("[%s] 外部(%s)との疎通を確認しました" % (datetime.datetime.now(), address02))
+        return
+
     if keyring.get_password('keyring_selenium', mid) is None:
         print("Please store your login info!",)
         print("Run script in terminal: pipenv python save_pass.py")
@@ -63,6 +75,19 @@ def login(mid):
     driver.quit()
     return
 
+def check_internet(Host="8.8.8.8", port=53, timeout_s=3):
+    """
+    Host: 8.8.8.8 (google-public-dns-a.google.com)
+    OpenPort: 53/tcp
+    Service: domain (DNS/TCP)
+    """
+    try:
+        socket.setdefaulttimeout(timeout_s)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((Host, port))
+        return True
+    except socket.error as ex:
+        print(ex)
+        return False
 
 def read_user_file():
     path = 'user.txt'
