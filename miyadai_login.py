@@ -15,6 +15,10 @@ from selenium.webdriver.common.by import By
 
 def login(mid):
     # 外部との疎通が確認できた場合は何もしない
+    address00 = "35.196.128.215"  # MyServer
+    if check_internet("35.196.128.215"):
+        print("[%s] 外部(%s)との疎通を確認しました" % (datetime.datetime.now(), address00))
+        return
     address01 = "8.8.8.8"
     if check_internet("8.8.8.8"):
         print("[%s] 外部(%s)との疎通を確認しました" % (datetime.datetime.now(), address01))
