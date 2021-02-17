@@ -8,6 +8,7 @@ selenium = "*"
 keyring = "*"
 pywin32 = {version = "*", sys_platform = "== 'win32'"}
 secretstorage = {version = "*", sys_platform = "== 'linux'"}
+pings = "*"
 
 [dev-packages]
 

@@ -2,9 +2,10 @@
 selenium自動ログイン
 """
 import datetime
-import socket
 import platform
+import time
 
+import pings
 from selenium import webdriver
 import keyring
 from selenium.common.exceptions import TimeoutException
@@ -15,19 +16,21 @@ from selenium.webdriver.common.by import By
 
 def login(mid):
     # 外部との疎通が確認できた場合は何もしない
+    p = pings.Ping()
     address00 = "35.196.128.215"  # MyServer
-    if check_internet("35.196.128.215"):
+    if p.ping(address00).is_reached():
         print("[%s] 外部(%s)との疎通を確認しました" % (datetime.datetime.now(), address00))
         return
     address01 = "8.8.8.8"
-    if check_internet("8.8.8.8"):
+    if p.ping(address01).is_reached():
         print("[%s] 外部(%s)との疎通を確認しました" % (datetime.datetime.now(), address01))
         return
     address02 = "1.1.1.1"
-    if check_internet("1.1.1.1"):
+    if p.ping(address02).is_reached():
         print("[%s] 外部(%s)との疎通を確認しました" % (datetime.datetime.now(), address02))
         return
-
+    print("[%s] 外部との疎通を確認することができませんでした" % (datetime.datetime.now()))
+    
     if keyring.get_password('keyring_selenium', mid) is None:
         print("Please store your login info!",)
         print("Run script in terminal: pipenv python save_pass.py")
@@ -77,21 +80,9 @@ def login(mid):
     except TimeoutException:
         print("Failed login. Please check MID or password.")
     driver.quit()
+    print("[%s] 自動ログインを終了します" % (datetime.datetime.now()))
     return
 
-def check_internet(Host="8.8.8.8", port=53, timeout_s=3):
-    """
-    Host: 8.8.8.8 (google-public-dns-a.google.com)
-    OpenPort: 53/tcp
-    Service: domain (DNS/TCP)
-    """
-    try:
-        socket.setdefaulttimeout(timeout_s)
-        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((Host, port))
-        return True
-    except socket.error as ex:
-        print(ex)
-        return False
 
 def read_user_file():
     path = 'user.txt'
@@ -101,5 +92,14 @@ def read_user_file():
 
 
 if __name__ == '__main__':
+    interval_s = 3
     mid = read_user_file()
-    login(mid)
+    while True:
+        t = time.time()
+        try:
+            login(mid)
+        except Error as e:
+            print(e)
+        wait_t = interval_s - (time.time() - t)
+        if wait_t > 0:
+            time.sleep(wait_t)
